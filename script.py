@@ -25,7 +25,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # ------------------ 配置 ------------------
-PORT = 8003
+PORT = int(os.getenv("PORT", 8003))
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
 # 火山引擎 API 配置
@@ -226,10 +226,10 @@ def start_server():
 # ------------------ 主函数 ------------------
 def main():
     parser = argparse.ArgumentParser(description="视觉问答系统")
-    parser.add_argument('--left', type=int, default=200, help='截图区域左上角 X 坐标 (px)，默认值 200')
-    parser.add_argument('--top', type=int, default=200, help='截图区域左上角 Y 坐标 (px)，默认值 200')
-    parser.add_argument('--width', type=int, default=1200, help='截图宽度 (px)，默认值 1200')
-    parser.add_argument('--height', type=int, default=800, help='截图高度 (px)，默认值 800')
+    parser.add_argument('--left', type=int, default=int(os.getenv("SCREENSHOT_LEFT", 200)), help='截图区域左上角 X 坐标 (px)，默认值 200')
+    parser.add_argument('--top', type=int, default=int(os.getenv("SCREENSHOT_TOP", 200)), help='截图区域左上角 Y 坐标 (px)，默认值 200')
+    parser.add_argument('--width', type=int, default=int(os.getenv("SCREENSHOT_WIDTH", 1200)), help='截图宽度 (px)，默认值 1200')
+    parser.add_argument('--height', type=int, default=int(os.getenv("SCREENSHOT_HEIGHT", 800)), help='截图高度 (px)，默认值 800')
 
     global args
     args = parser.parse_args()
