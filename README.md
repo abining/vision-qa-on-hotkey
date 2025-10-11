@@ -14,8 +14,9 @@
 
 ### 环境要求
 
-- Python 3.7+
-- macOS/Windows/Linux
+- **Python 3.9+** (推荐 Python 3.9 或更高版本)
+- **操作系统**：macOS/Windows/Linux
+- **测试环境**：Python 3.9 ✅ (已验证兼容)
 
 ### 安装依赖
 
