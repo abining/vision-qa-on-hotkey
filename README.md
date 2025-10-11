@@ -30,7 +30,14 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-2. 编辑 `.env` 文件，配置您的API密钥：
+2. 获取火山的key，并且获取对应的模型。
+
+![](https://s2.loli.net/2025/10/11/I2wfGhU5aJyODZo.png)
+
+![](https://s2.loli.net/2025/10/11/6E1JK9yrTZ5SqgD.png)
+
+3. 编辑 `.env` 文件，配置您的API密钥和截图区域，API秘钥是图1中的API Key，点击小眼睛即可查看并复制：
+
 ```env
 VOLC_API_KEY=your_api_key_here
 ```
@@ -63,6 +70,10 @@ python script.py --left 100 --top 100 --width 800 --height 600
 | `VOLC_MODEL` | 使用的模型 | doubao-1-5-vision-pro-250328 |
 | `VOLC_TEMPERATURE` | 模型温度参数 | 0.2 |
 | `VOLC_MAX_TOKENS` | 最大token数 | 无限制 |
+| `SCREENSHOT_LEFT` | 截图区域左上角X坐标 | 200 |
+| `SCREENSHOT_TOP` | 截图区域左上角Y坐标 | 200 |
+| `SCREENSHOT_WIDTH` | 截图宽度 | 1200 |
+| `SCREENSHOT_HEIGHT` | 截图高度 | 800 |
 
 ## TODO
 
