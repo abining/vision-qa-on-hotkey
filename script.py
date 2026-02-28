@@ -33,6 +33,7 @@ VOLC_API_KEY = os.getenv("VOLC_API_KEY") or os.getenv("VOLCENGINE_API_KEY")
 VOLC_BASE_URL = os.getenv("VOLC_BASE_URL") or "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
 MODEL_NAME = os.getenv("VOLC_MODEL") or "doubao-1-5-vision-pro-250328"
 TEMPERATURE = float(os.getenv("VOLC_TEMPERATURE", 0.2))
+DATASET =  os.getenv("DATASET") or ""
 MAX_TOKENS = os.getenv("VOLC_MAX_TOKENS")
 if MAX_TOKENS:
     MAX_TOKENS = int(MAX_TOKENS)
@@ -84,6 +85,10 @@ def ask_doubao_with_image(image_bytes):
     payload = {
         "model": MODEL_NAME,
         "temperature": TEMPERATURE,
+        "dataset": {
+            "id": DATASET,  # 你的数据集ID
+            "enable": True  # 开启数据集增强
+        },
         "messages": [
             {"role": "system", "content": "你是一个擅长中文回答的视觉助手。"},
             {
