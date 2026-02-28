@@ -1,5 +1,4 @@
-# Python版本要求
-python_requires>=3.9
+# 此项目要求 Python 版本 >= 3.9
 
 # 核心依赖
 pyautogui>=0.9.54
