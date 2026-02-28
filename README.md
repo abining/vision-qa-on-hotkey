@@ -91,6 +91,15 @@ python script.py --left 100 --top 100 --width 800 --height 600
 - **环境变量**：python-dotenv
 - **Web服务**：内置HTTP服务器
 
+## 发版流程
+
+```
+git add .
+git commit -m "fix: requirements.txt format"
+git tag -a v1.0 -m "发布1.0版本：修复一些bug和实现数据集引入"
+git push origin v1.0
+```
+
 ## 许可证
 
 MIT License
