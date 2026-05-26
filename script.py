@@ -20,6 +20,7 @@ import requests
 from PIL import Image
 from pynput import keyboard
 from dotenv import load_dotenv
+from openai import OpenAI
 
 # 加载环境变量
 load_dotenv()
@@ -29,8 +30,8 @@ PORT = int(os.getenv("PORT", 8003))
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
 # 火山引擎 API 配置
-VOLC_API_KEY = os.getenv("VOLC_API_KEY") or os.getenv("VOLCENGINE_API_KEY")
-VOLC_BASE_URL = os.getenv("VOLC_BASE_URL") or "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
+VOLC_API_KEY = os.getenv("VOLC_API_KEY") or os.getenv("ARK_API_KEY") or os.getenv("VOLCENGINE_API_KEY")
+VOLC_BASE_URL = os.getenv("VOLC_BASE_URL") or "https://ark.cn-beijing.volces.com/api/v3"
 MODEL_NAME = os.getenv("VOLC_MODEL") or "doubao-1-5-vision-pro-250328"
 TEMPERATURE = float(os.getenv("VOLC_TEMPERATURE", 0.2))
 DATASET =  os.getenv("DATASET") or ""
@@ -77,48 +78,88 @@ def ask_doubao_with_image(image_bytes):
         raise ValueError("未配置 VOLC_API_KEY 环境变量")
 
     base64_str = base64.b64encode(image_bytes).decode('utf-8')
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {VOLC_API_KEY}"
-    }
 
-    payload = {
-        "model": MODEL_NAME,
-        "temperature": TEMPERATURE,
-        "dataset": {
-            "id": DATASET,  # 你的数据集ID
-            "enable": True  # 开启数据集增强
-        },
-        "messages": [
-            {"role": "system", "content": "你是一个擅长中文回答的视觉助手。"},
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": "阅读图片中包含的问题，并用中文直接回答这个问题。"},
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/png;base64,{base64_str}"
-                        }
-                    }
-                ]
-            }
-        ]
-    }
-
-    if MAX_TOKENS:
-        payload["max_tokens"] = MAX_TOKENS
+    client = OpenAI(
+        api_key=VOLC_API_KEY,
+        base_url=VOLC_BASE_URL,
+    )
 
     start_time = time.time()
     try:
-        resp = requests.post(VOLC_BASE_URL, headers=headers, json=payload, timeout=30)
-        resp.raise_for_status()
-        data = resp.json()
+        # response = client.responses.create(
+        #     model=MODEL_NAME,
+        #     # input=[
+        #     #     {
+        #     #         "role": "user",
+        #     #         "content": [
+        #     #             {
+        #     #                 "type": "input_image",
+        #     #                 "image_url": f"data:image/png;base64,{base64_str}"
+        #     #             },
+        #     #             {
+        #     #                 "type": "input_text",
+        #     #                 "text": "阅读图片中包含的问题，并用中文直接回答这个问题"
+        #     #             }
+        #     #         ]
+        #     #     }
+        #     # ]
+        #     messages=[
+        #         {
+        #             "role": "user",
+        #             "content": [
+        #                 {
+        #                     "type": "image_url",
+        #                     "image_url": {
+        #                         "url": "https://ark-project.tos-cn-beijing.ivolces.com/images/view.jpeg"
+        #                     },
+        #                 },
+        #                 {"type": "text", "text": "这是哪里？"},
+        #             ],
+        #         }
+        #     ],
+        # )
+        response = client.chat.completions.create(
+            # 指定您创建的方舟推理接入点 ID，此处已帮您修改为您的推理接入点 ID
+            model=MODEL_NAME,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/png;base64,{base64_str}"
+                            },
+                        },
+                        {"type": "text", "text": "阅读图片中包含的问题，并用中文回答这个问题。"},
+                    ],
+                }
+            ],
+        )
+
         infer_ms = int((time.time() - start_time) * 1000)
         log_info(f"模型回答完成，耗时 {infer_ms}ms")
 
-        content = data["choices"][0]["message"]["content"]
-        return content, infer_ms
+        res = response.choices[0]
+        content = ""
+        
+        # 兼容 pydantic 对象提取
+        for out in getattr(response, "output", []):
+            if getattr(out, "type", "") == "message":
+                for c in getattr(out, "content", []):
+                    if getattr(c, "type", "") == "output_text":
+                        content += getattr(c, "text", "")
+        
+        # 如果获取失败或返回的数据是字典形式（兜底）
+        if not content and hasattr(response, 'model_dump'):
+            data = response.model_dump()
+            for out in data.get("output", []):
+                if out.get("type", "") == "message":
+                    for c in out.get("content", []):
+                        if c.get("type", "") == "output_text":
+                            content += c.get("text", "")
+
+        return res, infer_ms
     except Exception as e:
         log_error(f"API 调用失败: {e}")
         return f"调用失败: {e}", int((time.time() - start_time) * 1000)
