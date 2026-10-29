@@ -145,3 +145,6 @@ Desktop.ini
 
 # PyCharm
 *.iml
+
+# Local screenshots, recognition records and rotating logs
+/data/
